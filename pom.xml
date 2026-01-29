@@ -80,7 +80,7 @@
 		</dependency>
 		<dependency>
 			<groupId>com.itextpdf</groupId>
-			<artifactId>itext7-typography</artifactId>
+			<artifactId>itext7-calligraph</artifactId>
 			<version>7.2.5</version> <!-- latest stable version -->
 		</dependency>
 		<dependency>
