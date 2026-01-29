@@ -140,7 +140,8 @@ public class PDFGeneratorImpl implements PDFGenerator {
 		float screenWidth = CssUtils.parseAbsoluteLength("" + pageSize.getWidth());
 		MediaDeviceDescription mediaDescription = new MediaDeviceDescription(MediaType.SCREEN);
 		mediaDescription.setWidth(screenWidth);
-		DefaultFontProvider dfp = new DefaultFontProvider(true, true, false);
+		DefaultFontProvider dfp = new DefaultFontProvider(false, false, false);
+		dfp.addFont("/home/mosip/fonts/NotoSansMyanmar-Regular.ttf");
 		converterProperties.setMediaDeviceDescription(mediaDescription);
 		converterProperties.setFontProvider(dfp);
 		converterProperties.setBaseUri(resourceLoc);
