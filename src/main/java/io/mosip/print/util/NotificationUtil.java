@@ -21,10 +21,7 @@ import org.springframework.util.MultiValueMap;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Component
 public class NotificationUtil {
@@ -47,7 +44,10 @@ public class NotificationUtil {
     private String dateTimeFormat;
 
     private static final String EMAIL_SUB_DEFAULT = "UID Card Attached!";
-    private static final String EMAIL_DEFAULT = "Your UID Card is attached.";
+    private static final String EMAIL_DEFAULT = "Dear Citizen,\n\n" + "Please find your UID Card attached.\n\n" + "Regards,\n" + "e-ID Department";
+
+    private static final String EMAIL_SUB_DEFAULT_BUR = "အိုင်ဒီကတ်ကို ပူးတွဲထားပါသည်။";
+    private static final String EMAIL_DEFAULT_BUR = "ချစ်လှစွာသော နိုင်ငံသား၊\n\n" + "သင့် UID ကတ်ကို ပူးတွဲပေးပါသည်။\n" + "ကျေးဇူးပြု၍ ကြည့်ပါ။\n\n" + "ဂါရဝပြုလျက်ဖြင့်၊\n" + "အီလက်ထရောနစ်မှတ်ပုံတင်စနစ်ဦးစီးဌာန";
 
     public List<NotificationResponseDTO> emailNotification(List<String> emailIds, String fileName, String emailContentTpl, String emailSubTpl, Map<String, Object> attributes,
                                                     byte[] attachmentFile, String templateLang) throws Exception {
@@ -107,8 +107,11 @@ public class NotificationUtil {
     private String getEmailContent(String emailContentTpl, Map<String, Object> attributes, String preferredLang) throws IOException, ApisResourceAccessException {
 
         InputStream in = templateGenerator.getTemplate(emailContentTpl, attributes, preferredLang);
-        if (in == null) {
+        if (in == null && Objects.equals(preferredLang, "English")) {
             return EMAIL_DEFAULT;
+        }
+        else if (in == null) {
+            return EMAIL_DEFAULT_BUR;
         }
         return new String(in.readAllBytes(), StandardCharsets.UTF_8);
     }
@@ -116,8 +119,11 @@ public class NotificationUtil {
     private String getEmailSubject(String emailSubTpl, Map<String, Object> attributes, String templateLang) throws IOException, ApisResourceAccessException {
 
         InputStream in = templateGenerator.getTemplate(emailSubTpl, attributes, templateLang);
-        if (in == null) {
+        if (in == null && Objects.equals(templateLang, "English")) {
             return EMAIL_SUB_DEFAULT;
+        }
+        else if (in == null) {
+            return EMAIL_SUB_DEFAULT_BUR;
         }
         return new String(in.readAllBytes(), StandardCharsets.UTF_8);
     }
