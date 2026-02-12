@@ -111,6 +111,7 @@ public class NotificationUtil {
     private String getEmailContent(String emailContentTpl, Map<String, Object> attributes, String preferredLang) throws IOException, ApisResourceAccessException {
 
         InputStream in = templateGenerator.getTemplate(emailContentTpl, attributes, preferredLang);
+        log.info("preferredLang: {}", preferredLang);
         if (in == null && Objects.equals(preferredLang, "English")) {
             return EMAIL_DEFAULT;
         }
@@ -123,6 +124,7 @@ public class NotificationUtil {
     private String getEmailSubject(String emailSubTpl, Map<String, Object> attributes, String templateLang) throws IOException, ApisResourceAccessException {
 
         InputStream in = templateGenerator.getTemplate(emailSubTpl, attributes, templateLang);
+        log.info("templateLang: {}", templateLang);
         if (in == null && Objects.equals(templateLang, "English")) {
             return EMAIL_SUB_DEFAULT;
         }
