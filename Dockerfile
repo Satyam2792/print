@@ -80,6 +80,8 @@ COPY ./target/print-*.jar print.jar
 # Copy the PNG flag from resources into container
 COPY src/main/resources/flag.png /app/resources/flag.png
 
+COPY src/main/resources/burmese_header.png /app/resources/burmese_header.png
+
 RUN mkdir -p /home/mosip/fonts
 COPY src/main/resources/NotoSansMyanmar-Regular.ttf /home/mosip/fonts/
 RUN chmod 644 /home/mosip/fonts/NotoSansMyanmar-Regular.ttf
