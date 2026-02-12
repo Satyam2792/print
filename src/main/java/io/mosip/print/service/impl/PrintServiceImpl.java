@@ -376,6 +376,9 @@ public class PrintServiceImpl implements PrintService {
 
             setTemplateAttributes(decryptedJson.toString(), attributes);
 			String myanmarName = (String) attributes.get("fullName_bur"); // adjust key if different
+			if(myanmarName ==null || myanmarName.isEmpty()){
+				myanmarName = (String) attributes.get("fullName_eng");
+			}
 			if (myanmarName != null && !myanmarName.isEmpty()) {
 				// String fullText = "အမည်: " + myanmarName;
 			    String imagePath = convertTextToImageFile(myanmarName, uin + "_name");
