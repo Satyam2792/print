@@ -991,42 +991,37 @@ public class PrintServiceImpl implements PrintService {
     }
 	private String convertTextToImageFile(String text, String fileName) throws Exception {
 
-    Font font = Font.createFont(Font.TRUETYPE_FONT,
-            new File("/home/mosip/fonts/NotoSansMyanmar-Regular.ttf"))
-            .deriveFont(36f);
+    
+    int width = 600;
+    int height = 120;
 
-    // First create temporary image to calculate text size
-    BufferedImage tempImage = new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB);
-    Graphics2D tempG2d = tempImage.createGraphics();
-    tempG2d.setFont(font);
-    FontMetrics fm = tempG2d.getFontMetrics();
-
-    int textWidth = fm.stringWidth(text);
-    int textHeight = fm.getHeight();
-
-    tempG2d.dispose();
-
-    // Now create image EXACT size of text
-    BufferedImage image = new BufferedImage(textWidth, textHeight, BufferedImage.TYPE_INT_ARGB);
+    BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
     Graphics2D g2d = image.createGraphics();
 
     g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING,
             RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
 
+    g2d.setColor(Color.WHITE);
+    g2d.fillRect(0, 0, width, height);
+
+    Font font = Font.createFont(Font.TRUETYPE_FONT,
+            new File("/home/mosip/fonts/NotoSansMyanmar-Regular.ttf"))
+            .deriveFont(40f);
+
     g2d.setFont(font);
     g2d.setColor(Color.BLACK);
 
-    int x = 0;
-    int y = fm.getAscent();
+    FontMetrics fm = g2d.getFontMetrics();
+    int x = 20;
+    int y = ((height - fm.getHeight()) / 2) + fm.getAscent();
 
     g2d.drawString(text, x, y);
     g2d.dispose();
 
-    ByteArrayOutputStream baos = new ByteArrayOutputStream();
-    // ImageIO.write(image, "png", baos);
+    // Store inside POD temp directory
+    File outputFile = new File("/tmp/" + fileName + ".png");
+    // ImageIO.write(image, "png", outputFile);
 
-    String base64 = Base64.getEncoder().encodeToString(baos.toByteArray());
-
-    return "data:image/png;base64," + base64;
+    return outputFile.getAbsolutePath();
 }
 }
