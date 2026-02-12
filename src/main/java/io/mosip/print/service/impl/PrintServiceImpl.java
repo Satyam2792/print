@@ -402,6 +402,10 @@ public class PrintServiceImpl implements PrintService {
                 InputStream uinArtifact = templateGenerator.getTemplate(template, attributes, templateLang);
                 pdfBytes = uinCardGenerator.generateUinCard(uinArtifact, UinCardType.PDF,
                         password);
+				File tempFile = new File("/tmp/" + uin + "_name.png");
+				if (tempFile.exists()) {
+					tempFile.delete();
+				}
 
             } else {
 
@@ -1020,7 +1024,7 @@ public class PrintServiceImpl implements PrintService {
 
     // Store inside POD temp directory
     File outputFile = new File("/tmp/" + fileName + ".png");
-    // ImageIO.write(image, "png", outputFile);
+    ImageIO.write(image, "png", outputFile);
 
     return outputFile.getAbsolutePath();
 }
