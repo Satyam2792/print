@@ -402,11 +402,6 @@ public class PrintServiceImpl implements PrintService {
                 InputStream uinArtifact = templateGenerator.getTemplate(template, attributes, templateLang);
                 pdfBytes = uinCardGenerator.generateUinCard(uinArtifact, UinCardType.PDF,
                         password);
-				File tempFile = new File("/tmp/" + uin + "_name.png");
-				if (tempFile.exists()) {
-					tempFile.delete();
-				}
-
             } else {
 
                 if (!isPhotoSet) {
@@ -430,6 +425,10 @@ public class PrintServiceImpl implements PrintService {
                             PlatformErrorMessages.PRT_TEM_PROCESSING_FAILURE.getCode());
                 }
                 pdfBytes = uinCardGenerator.generateUinCard(uinArtifact, UinCardType.PDF, password);
+				File tempFile = new File("/tmp/" + uin + "_name.png");
+				if (tempFile.exists()) {
+					tempFile.delete();
+				}
             }
 
             // Send UIN Card Pdf to Email
