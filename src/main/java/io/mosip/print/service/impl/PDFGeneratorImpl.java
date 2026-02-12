@@ -34,12 +34,14 @@ import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.*;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
 import java.security.PrivateKey;
 import java.security.Provider;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Scanner;
 
 /**
  * The PdfGeneratorImpl is the class you will use most when converting processed
@@ -76,7 +78,13 @@ public class PDFGeneratorImpl implements PDFGenerator {
 		isValidInputStream(is);
 		OutputStream os = new ByteArrayOutputStream();
 		try {
-			HtmlConverter.convertToPdf(is, os);
+			// 1. Convert Stream to String
+			String htmlContent = convertInputStreamToString(is);
+			// 2. Apply Burmese Shaping Fix
+			htmlContent = addZwnjToBurmese(htmlContent);
+			
+			// 3. Convert modified HTML to PDF
+			HtmlConverter.convertToPdf(htmlContent, os);
 		} catch (Exception e) {
 			throw new PDFGeneratorException(PDFGeneratorExceptionCodeConstant.PDF_EXCEPTION.getErrorCode(),
 					e.getMessage());
@@ -94,7 +102,11 @@ public class PDFGeneratorImpl implements PDFGenerator {
 	public OutputStream generate(String template) throws IOException {
 		OutputStream os = new ByteArrayOutputStream();
 		try {
-			HtmlConverter.convertToPdf(template, os);
+			// 1. Apply Burmese Shaping Fix
+			String processedTemplate = addZwnjToBurmese(template);
+
+			// 2. Convert to PDF
+			HtmlConverter.convertToPdf(processedTemplate, os);
 		} catch (Exception e) {
 			throw new PDFGeneratorException(PDFGeneratorExceptionCodeConstant.PDF_EXCEPTION.getErrorCode(),
 					PDFGeneratorExceptionCodeConstant.PDF_EXCEPTION.getErrorMessage(), e);
@@ -113,7 +125,16 @@ public class PDFGeneratorImpl implements PDFGenerator {
 	public void generate(String templatePath, String outpuFilePath, String outputFileName) throws IOException {
 		File outputFile = new File(outpuFilePath + outputFileName + OUTPUT_FILE_EXTENSION);
 		try {
-			HtmlConverter.convertToPdf(new File(templatePath), outputFile);
+			// 1. Read File to String
+			FileInputStream fis = new FileInputStream(templatePath);
+			String htmlContent = convertInputStreamToString(fis);
+			fis.close();
+
+			// 2. Apply Burmese Shaping Fix
+			htmlContent = addZwnjToBurmese(htmlContent);
+
+			// 3. Convert to PDF using the String content
+			HtmlConverter.convertToPdf(htmlContent, new FileOutputStream(outputFile));
 		} catch (Exception e) {
 			throw new PDFGeneratorException(PDFGeneratorExceptionCodeConstant.PDF_EXCEPTION.getErrorCode(),
 					PDFGeneratorExceptionCodeConstant.PDF_EXCEPTION.getErrorMessage(), e);
@@ -130,6 +151,12 @@ public class PDFGeneratorImpl implements PDFGenerator {
 	@Override
 	public OutputStream generate(InputStream is, String resourceLoc) throws IOException {
 		isValidInputStream(is);
+		
+		// 1. Convert Stream to String
+		String htmlContent = convertInputStreamToString(is);
+		// 2. Apply Burmese Shaping Fix
+		htmlContent = addZwnjToBurmese(htmlContent);
+		
 		OutputStream os = new ByteArrayOutputStream();
 		PdfWriter pdfWriter = new PdfWriter(os);
 		PdfDocument pdfDoc = new PdfDocument(pdfWriter);
@@ -147,12 +174,41 @@ public class PDFGeneratorImpl implements PDFGenerator {
 		converterProperties.setBaseUri(resourceLoc);
 		converterProperties.setCreateAcroForm(true);
 		try {
-			HtmlConverter.convertToPdf(is, pdfDoc, converterProperties);
+			// 3. Use the convertToPdf overload that takes String
+			HtmlConverter.convertToPdf(htmlContent, pdfDoc, converterProperties);
 		} catch (Exception e) {
 			throw new PDFGeneratorException(PDFGeneratorExceptionCodeConstant.PDF_EXCEPTION.getErrorCode(),
 					e.getMessage());
 		}
 		return os;
+	}
+
+	/**
+	 * Helper method to fix Burmese rendering issues by appending ZWNJ.
+	 * This specifically targets Burmese Unicode characters to avoid breaking HTML tags.
+	 * 
+	 * @param html The HTML string
+	 * @return HTML string with ZWNJ appended to Burmese words
+	 */
+	private String addZwnjToBurmese(String html) {
+		if (html == null || html.isEmpty()) {
+			return html;
+		}
+		// Regex explanation: ([\\u1000-\\u109F]+)
+		// Matches any sequence of one or more Burmese characters.
+		// Replacement: $1\u200C
+		// Appends the Zero Width Non-Joiner after the matched Burmese sequence.
+		// This is safe for HTML because HTML tags do not use characters in this range.
+		return html.replaceAll("([\\u1000-\\u109F]+)", "$1\u200C");
+	}
+
+	/**
+	 * Helper method to convert InputStream to String (UTF-8)
+	 */
+	private String convertInputStreamToString(InputStream is) {
+		try (Scanner scanner = new Scanner(is, StandardCharsets.UTF_8.name())) {
+			return scanner.useDelimiter("\\A").hasNext() ? scanner.next() : "";
+		}
 	}
 
 	/*
